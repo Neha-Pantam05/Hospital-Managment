@@ -6,7 +6,7 @@ import React from "react";
 type PatientMedicalRecordCardProps = {
   diagnosis: string;
   date: string;
-  medicineType: "Tablet" | "Syrup" | "Powder" | "Capsule" | "Injection";
+  medicineType: string;
   medicineName: string;
   note?: string;
 };

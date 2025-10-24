@@ -20,7 +20,7 @@ export type MedicalRecord = {
   id: number;
   date: string;
   diagnosis: string;
-  medicineType: "Tablet" | "Syrup" | "Powder" | "Capsule" | "Injection";
+  medicineType:string;
   medicineName: string;
   note?: string;
 };
