@@ -193,7 +193,7 @@ export const AddMedicalRecordDialog = ({ onAdd }: { onAdd: (record: Omit<Medical
                               <SelectItem value="Ointment">Ointment</SelectItem>
                               <SelectItem value="Drops">Drops</SelectItem>
                               <SelectItem value="Inhaler">Inhaler</SelectItem>
-                              <SelectItem value="Inhaler">Other</SelectItem>
+                              <SelectItem value="Other">Other</SelectItem>
                             </SelectContent>
                           </Select>
                         </div>
