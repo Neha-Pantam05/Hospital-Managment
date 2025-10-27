@@ -1,56 +1,74 @@
-'use client'
-import React, { useState, FormEvent, ChangeEvent } from 'react';
-import { Calendar as CalendarIcon, Clock, User, Phone, Save, Plus } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
-import { toast } from 'sonner';
+"use client";
+import React, { useState, FormEvent, ChangeEvent } from "react";
+import {
+  Calendar as CalendarIcon,
+  Clock,
+  User,
+  Phone,
+  Save,
+  Plus,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  CardDescription,
+} from "@/components/ui/card";
+import { toast } from "sonner";
+import { appointmentsAPI } from "@/lib/apis/appointments/api";
 
 interface AppointmentData {
   patientName: string;
   mobile: string;
   date: string;
   time: string;
-  status: 'Pending' | 'Completed' | 'Missed';
+  status: "Pending" | "Completed" | "Missed";
 }
 
 const AddAppointmentForm: React.FC = () => {
   const [formData, setFormData] = useState<AppointmentData>({
-    patientName: '',
-    mobile: '',
-    date: '',
-    time: '',
-    status: 'Pending',
+    patientName: "",
+    mobile: "",
+    date: "",
+    time: "",
+    status: "Pending",
   });
-
+  
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
-    setFormData(prev => ({ ...prev, [id]: value }));
+    setFormData((prev) => ({ ...prev, [id]: value }));
   };
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    
+
     const dataToSubmit = {
-      ...formData,
-      dateTime: `${formData.date}T${formData.time}:00`,
+      patientName: formData.patientName,
+      mobile: formData.mobile,
+      date: formData.date,
+      time: formData.time,
+      status: formData.status,
     };
-    
-    console.log('Submitting Appointment Data:', dataToSubmit);
 
-    toast.success(`Appointment Scheduled for ${formData.patientName}`, {
-      description: `Date: ${formData.date} at ${formData.time}. Status: Pending.`,
-      duration: 4000
-    });
-
-    setFormData(prev => ({
+    try {
+      await appointmentsAPI.create(dataToSubmit);
+      toast.success("Appointment scheduled successfully");
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to schedule appointment");
+    } finally {
+      setFormData((prev) => ({
         ...prev,
-        patientName: '',
-        mobile: '',
-        date: '',
-        time: '',
-    }));
+        patientName: "",
+        mobile: "",
+        date: "",
+        time: "",
+      }));
+    }
   };
 
   const getInputClass = (): string =>
@@ -70,9 +88,13 @@ const AddAppointmentForm: React.FC = () => {
         </CardHeader>
         <CardContent className="p-6 space-y-6">
           <form onSubmit={handleSubmit} className="space-y-6">
-            
             <div>
-              <Label htmlFor="patientName" className="text-gray-700 font-semibold mb-2 block text-sm">Patient Name</Label>
+              <Label
+                htmlFor="patientName"
+                className="text-gray-700 font-semibold mb-2 block text-sm"
+              >
+                Patient Name
+              </Label>
               <div className="relative">
                 <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <Input
@@ -88,7 +110,12 @@ const AddAppointmentForm: React.FC = () => {
             </div>
 
             <div>
-              <Label htmlFor="mobile" className="text-gray-700 font-semibold mb-2 block text-sm">Mobile Number</Label>
+              <Label
+                htmlFor="mobile"
+                className="text-gray-700 font-semibold mb-2 block text-sm"
+              >
+                Mobile Number
+              </Label>
               <div className="relative">
                 <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <Input
@@ -105,9 +132,13 @@ const AddAppointmentForm: React.FC = () => {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              
               <div>
-                <Label htmlFor="date" className="text-gray-700 font-semibold mb-2 block text-sm">Appointment Date</Label>
+                <Label
+                  htmlFor="date"
+                  className="text-gray-700 font-semibold mb-2 block text-sm"
+                >
+                  Appointment Date
+                </Label>
                 <div className="relative">
                   <CalendarIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                   <Input
@@ -122,7 +153,12 @@ const AddAppointmentForm: React.FC = () => {
               </div>
 
               <div>
-                <Label htmlFor="time" className="text-gray-700 font-semibold mb-2 block text-sm">Appointment Time</Label>
+                <Label
+                  htmlFor="time"
+                  className="text-gray-700 font-semibold mb-2 block text-sm"
+                >
+                  Appointment Time
+                </Label>
                 <div className="relative">
                   <Clock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                   <Input
@@ -138,7 +174,11 @@ const AddAppointmentForm: React.FC = () => {
             </div>
 
             <div className="text-sm text-gray-500 pt-2">
-                Appointment Status: <span className="font-semibold text-yellow-600">{formData.status}</span> (Set automatically)
+              Appointment Status:{" "}
+              <span className="font-semibold text-yellow-600">
+                {formData.status}
+              </span>{" "}
+              (Set automatically)
             </div>
 
             <Button

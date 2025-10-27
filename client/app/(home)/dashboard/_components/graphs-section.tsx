@@ -23,53 +23,25 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-const patientVisitsData = [
-  { day: "Mon", visits: 45 },
-  { day: "Tue", visits: 52 },
-  { day: "Wed", visits: 48 },
-  { day: "Thu", visits: 61 },
-  { day: "Fri", visits: 55 },
-  { day: "Sat", visits: 38 },
-  { day: "Sun", visits: 30 },
-];
-
-const ageGroupData = [
-  { group: "0-12", patients: 18 },
-  { group: "13-19", patients: 22 },
-  { group: "20-35", patients: 45 },
-  { group: "36-50", patients: 34 },
-  { group: "51-65", patients: 28 },
-  { group: "65+", patients: 19 },
-];
-
-const genderData = [
-  { name: "Male", value: 48, color: "#3b82f6" },
-  { name: "Female", value: 45, color: "#ec4899" },
-  { name: "Other", value: 7, color: "#8b5cf6" },
-];
+type GraphsSectionProps = {
+  visitsByDay: { day: string; visits: number }[];
+  genderDistribution: { gender: string; count: number; percentage: number }[];
+  ageDistribution: { group: string; count: number }[];
+}
 
 const COLORS = {
   line: "#14b8a6",
   bar: "#f97316",
-  pie: ["#3b82f6", "#ec4899", "#8b5cf6"],
+  pie: ["#3b82f6", "#ec4899", "#8b5cf6", "#10b981", "#f59e0b"],
 };
 
-const CustomTooltip = ({
-  active,
-  payload,
-  label,
-}: {
-  active?: boolean;
-  payload?: any[];
-  label?: string;
-}) => {
+const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     return (
       <div className="bg-white p-3 rounded-lg shadow-lg border border-gray-200">
         <p className="font-semibold text-gray-800">{label}</p>
         <p className="text-sm text-gray-600">
-          {payload[0].name}:{" "}
-          <span className="font-bold">{payload[0].value}</span>
+          {payload[0].name}: <span className="font-bold">{payload[0].value}</span>
         </p>
       </div>
     );
@@ -77,9 +49,34 @@ const CustomTooltip = ({
   return null;
 };
 
-const GraphsSection = () => {
+const GraphsSection = ({ ageDistribution, genderDistribution, visitsByDay }: GraphsSectionProps) => {
+  
+  // Transform age distribution data to match chart expectations
+  const transformedAgeData = ageDistribution?.map(item => ({
+    group: item.group,
+    count: item.count
+  })) || [];
+
+  // Transform gender distribution data for Pie chart
+  const transformedGenderData = genderDistribution?.map(item => ({
+    name: item.gender,
+    value: item.count,
+    percentage: item.percentage
+  })) || [];
+
+  // Ensure visitsByDay has proper data
+  const transformedVisitsData = visitsByDay?.map(item => ({
+    day: item.day.substring(0, 3), // Shorten day names (e.g., "Monday" -> "Mon")
+    visits: item.visits
+  })) || [];
+
+  console.log("Transformed Age Data:", transformedAgeData);
+  console.log("Transformed Gender Data:", transformedGenderData);
+  console.log("Transformed Visits Data:", transformedVisitsData);
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 p-6">
+      {/* Patient Visits Chart */}
       <Card className="shadow-lg border-gray-200 lg:col-span-2">
         <CardHeader>
           <CardTitle className="text-xl font-bold text-gray-800">
@@ -91,7 +88,7 @@ const GraphsSection = () => {
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={patientVisitsData}>
+            <LineChart data={transformedVisitsData}>
               <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
               <XAxis
                 dataKey="day"
@@ -103,13 +100,7 @@ const GraphsSection = () => {
                 style={{ fontSize: "14px", fontWeight: "500" }}
               />
               <Tooltip content={<CustomTooltip />} />
-              <Legend
-                wrapperStyle={{
-                  paddingTop: "20px",
-                  fontSize: "14px",
-                  fontWeight: "500",
-                }}
-              />
+              <Legend />
               <Line
                 type="monotone"
                 dataKey="visits"
@@ -124,6 +115,7 @@ const GraphsSection = () => {
         </CardContent>
       </Card>
 
+      {/* Age Distribution Chart */}
       <Card className="shadow-lg border-gray-200">
         <CardHeader>
           <CardTitle className="text-xl font-bold text-gray-800">
@@ -135,7 +127,7 @@ const GraphsSection = () => {
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={ageGroupData}>
+            <BarChart data={transformedAgeData}>
               <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
               <XAxis
                 dataKey="group"
@@ -147,15 +139,9 @@ const GraphsSection = () => {
                 style={{ fontSize: "14px", fontWeight: "500" }}
               />
               <Tooltip content={<CustomTooltip />} />
-              <Legend
-                wrapperStyle={{
-                  paddingTop: "10px",
-                  fontSize: "14px",
-                  fontWeight: "500",
-                }}
-              />
+              <Legend />
               <Bar
-                dataKey="patients"
+                dataKey="count"
                 fill={COLORS.bar}
                 radius={[8, 8, 0, 0]}
                 name="Patients"
@@ -165,6 +151,7 @@ const GraphsSection = () => {
         </CardContent>
       </Card>
 
+      {/* Gender Distribution Chart */}
       <Card className="shadow-lg border-gray-200">
         <CardHeader>
           <CardTitle className="text-xl font-bold text-gray-800">
@@ -176,22 +163,28 @@ const GraphsSection = () => {
           <ResponsiveContainer width="100%" height={300}>
             <PieChart>
               <Pie
-                data={genderData}
+                data={transformedGenderData}
                 cx="50%"
                 cy="50%"
                 labelLine={true}
                 outerRadius={100}
                 fill="#8884d8"
                 dataKey="value"
-                label={({ name, percent }) =>
-                  `${name} ${((percent as number) * 100).toFixed(0)}%`
-                }
+                label={({ name, percentage }) => `${name} ${percentage}%`}
               >
-                {genderData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
+                {transformedGenderData.map((entry, index) => (
+                  <Cell 
+                    key={`cell-${index}`} 
+                    fill={COLORS.pie[index % COLORS.pie.length]} 
+                  />
                 ))}
               </Pie>
-              <Tooltip content={<CustomTooltip />} />
+              <Tooltip 
+                formatter={(value, name, props) => [
+                  `${value} (${props.payload.percentage}%)`, 
+                  name
+                ]}
+              />
               <Legend
                 verticalAlign="bottom"
                 height={36}
