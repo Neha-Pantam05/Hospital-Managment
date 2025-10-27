@@ -6,6 +6,6 @@ import lombok.Data;
 public class PatientRequest {
     private String name;
     private String gender;
-    private String mobile;
+    private String mob;
     private Integer age;
 }

@@ -21,7 +21,7 @@ public class MedicalRecordService {
 
     public List<MedicalRecord> getPatientMedicalRecords(Long patientId) {
         Patient patient = patientRepo.findById(patientId).orElseThrow(() -> new RuntimeException("Patient not found"));
-        return medicalRecordRepo.findByPatientId(patientId);
+        return medicalRecordRepo.findByPatientIdOrderByVisitedAtDesc(patientId);
     }
 
     public MedicalRecord createMedicalRecord(MedicalRecordRequest request) {

@@ -1,9 +1,9 @@
-'use client'
-import { useState } from 'react';
-import { Heart, LogOut, Home, Users, Calendar, Menu, X } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { usePathname, useRouter } from 'next/navigation';
-
+"use client";
+import { useState } from "react";
+import { Heart, LogOut, Home, Users, Calendar, Menu, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { usePathname, useRouter } from "next/navigation";
+import { authAPI } from "@/lib/apis/auth/api";
 
 const Logo = () => (
   <div className="flex items-center gap-3">
@@ -16,34 +16,44 @@ const Logo = () => (
   </div>
 );
 
-const NavLinks = ({ isMobile = false, onLinkClick, currentPath }: { isMobile?: boolean; onLinkClick?: (e: React.MouseEvent<HTMLAnchorElement>) => void; currentPath: string }) => {
+const NavLinks = ({
+  isMobile = false,
+  onLinkClick,
+  currentPath,
+}: {
+  isMobile?: boolean;
+  onLinkClick?: (e: React.MouseEvent<HTMLAnchorElement>) => void;
+  currentPath: string;
+}) => {
   const links = [
-    { name: 'Dashboard', icon: Home, href: '/dashboard' },
-    { name: 'Patients', icon: Users, href: '/patient' },
-    { name: 'Appointments', icon: Calendar, href: '/appointments' },
+    { name: "Dashboard", icon: Home, href: "/dashboard" },
+    { name: "Patients", icon: Users, href: "/patient" },
+    { name: "Appointments", icon: Calendar, href: "/appointments" },
   ];
 
-  const pathWithoutQuery = currentPath.split('?')[0];
-  const segments = pathWithoutQuery.split('/').filter(segment => segment.length > 0);
-  const primaryRoute = segments[0] ? `/${segments[0]}` : '/dashboard';
+  const pathWithoutQuery = currentPath.split("?")[0];
+  const segments = pathWithoutQuery
+    .split("/")
+    .filter((segment) => segment.length > 0);
+  const primaryRoute = segments[0] ? `/${segments[0]}` : "/dashboard";
 
   return (
     <>
       {links.map((link) => {
         const Icon = link.icon;
-        
+
         const isActive = link.href === primaryRoute;
-        
+
         const linkClass = isMobile
           ? `flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
               isActive
-                ? 'bg-blue-50 text-blue-600'
-                : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600'
+                ? "bg-blue-50 text-blue-600"
+                : "text-gray-700 hover:bg-blue-50 hover:text-blue-600"
             }`
           : `flex items-center gap-2 px-4 py-2 rounded-lg transition-colors font-medium ${
               isActive
-                ? 'bg-blue-50 text-blue-600'
-                : 'text-gray-700 hover:text-blue-600 hover:bg-blue-50'
+                ? "bg-blue-50 text-blue-600"
+                : "text-gray-700 hover:text-blue-600 hover:bg-blue-50"
             }`;
 
         return (
@@ -63,8 +73,10 @@ const NavLinks = ({ isMobile = false, onLinkClick, currentPath }: { isMobile?: b
 };
 
 const LogoutButton = ({ isMobile = false }: { isMobile?: boolean }) => {
+  const router = useRouter();
   const handleLogout = () => {
-    console.log('Logging out...');
+    authAPI.logout();
+    router.push("/");
   };
 
   return (
@@ -72,8 +84,8 @@ const LogoutButton = ({ isMobile = false }: { isMobile?: boolean }) => {
       variant={isMobile ? "ghost" : "outline"}
       className={`${
         isMobile
-          ? 'w-full justify-start gap-3 text-red-600 hover:text-red-700 hover:bg-red-50'
-          : 'gap-2 text-red-600 hover:text-red-700 border-red-200 hover:bg-red-50'
+          ? "w-full justify-start gap-3 text-red-600 hover:text-red-700 hover:bg-red-50"
+          : "gap-2 text-red-600 hover:text-red-700 border-red-200 hover:bg-red-50"
       }`}
       onClick={handleLogout}
     >
@@ -83,16 +95,26 @@ const LogoutButton = ({ isMobile = false }: { isMobile?: boolean }) => {
   );
 };
 
-const MobileMenu = ({ isOpen, onClose, currentPath, onLinkClick }:{isOpen:boolean, onClose:()=>void, currentPath:string, onLinkClick:(e:React.MouseEvent<HTMLAnchorElement>)=>void}) => {
+const MobileMenu = ({
+  isOpen,
+  onClose,
+  currentPath,
+  onLinkClick,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  currentPath: string;
+  onLinkClick: (e: React.MouseEvent<HTMLAnchorElement>) => void;
+}) => {
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 lg:hidden">
-      <div 
+      <div
         className="fixed inset-0 bg-black/50 backdrop-blur-sm"
         onClick={onClose}
       />
-      
+
       <div className="fixed top-0 right-0 bottom-0 w-64 bg-white shadow-2xl">
         <div className="flex flex-col h-full">
           <div className="flex items-center justify-between p-4 border-b">
@@ -106,7 +128,11 @@ const MobileMenu = ({ isOpen, onClose, currentPath, onLinkClick }:{isOpen:boolea
           </div>
 
           <nav className="flex-1 p-4 space-y-2">
-            <NavLinks isMobile={true} onLinkClick={onLinkClick} currentPath={currentPath} />
+            <NavLinks
+              isMobile={true}
+              onLinkClick={onLinkClick}
+              currentPath={currentPath}
+            />
           </nav>
 
           <div className="p-4 border-t">
@@ -120,11 +146,11 @@ const MobileMenu = ({ isOpen, onClose, currentPath, onLinkClick }:{isOpen:boolea
 
 export default function HospitalNavbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  
+
   const router = useRouter();
   const pathname = usePathname();
 
-  const handleLinkClick = (href:string) => {
+  const handleLinkClick = (href: string) => {
     router.push(href);
     setMobileMenuOpen(false);
   };
@@ -136,12 +162,12 @@ export default function HospitalNavbar() {
           <Logo />
 
           <div className="hidden lg:flex items-center gap-2">
-            <NavLinks 
-              currentPath={pathname} 
+            <NavLinks
+              currentPath={pathname}
               onLinkClick={(e) => {
                 e.preventDefault();
-                handleLinkClick(e.currentTarget.getAttribute('href')!);
-              }} 
+                handleLinkClick(e.currentTarget.getAttribute("href")!);
+              }}
             />
           </div>
 
@@ -158,13 +184,13 @@ export default function HospitalNavbar() {
         </div>
       </div>
 
-      <MobileMenu 
-        isOpen={mobileMenuOpen} 
+      <MobileMenu
+        isOpen={mobileMenuOpen}
         onClose={() => setMobileMenuOpen(false)}
         currentPath={pathname}
         onLinkClick={(e) => {
           e.preventDefault();
-          handleLinkClick(e.currentTarget.getAttribute('href')!);
+          handleLinkClick(e.currentTarget.getAttribute("href")!);
         }}
       />
     </nav>

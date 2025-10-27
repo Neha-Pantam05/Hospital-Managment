@@ -12,7 +12,7 @@ import { Eye, EyeOff, Lock, Mail, User } from "lucide-react";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { toast } from "sonner";
-import { authAPI } from "@/lib/apis/auth/auth";
+import { authAPI } from "@/lib/apis/auth/api";
 import { useRouter } from "next/navigation";
 import { saveAuthData } from "@/lib/helpers/auth";
 const RegisterForm = () => {

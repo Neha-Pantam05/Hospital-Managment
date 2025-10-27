@@ -1,6 +1,6 @@
 'use client'
 import { useState } from "react";
-import { Patient } from "./patient-details";
+
 import { Dialog,DialogContent,DialogFooter,DialogHeader,DialogTitle,DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Edit } from "lucide-react";
@@ -8,7 +8,8 @@ import { DialogDescription } from "@radix-ui/react-dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
+import { Patient } from "@/types/patient";
+
 
 export  const EditPatientDialog = ({ patient, onSave }: { patient: Patient; onSave: (data: Patient) => void }) => {
     const [open, setOpen] = useState(false);
@@ -67,8 +68,8 @@ export  const EditPatientDialog = ({ patient, onSave }: { patient: Patient; onSa
               <Label htmlFor="mobile">Mobile Number</Label>
               <Input
                 id="mobile"
-                value={formData.mobile}
-                onChange={(e) => setFormData({ ...formData, mobile: e.target.value })}
+                value={formData.mob}
+                onChange={(e) => setFormData({ ...formData, mob: e.target.value })}
               />
             </div>
             

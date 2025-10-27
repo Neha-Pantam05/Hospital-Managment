@@ -1,51 +1,59 @@
-'use client'
-import React, { useState, FormEvent, ChangeEvent } from 'react';
-import { UserPlus, User, Phone, Calendar, Ruler, Save } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { toast } from 'sonner';
+"use client";
+import React, { useState, FormEvent, ChangeEvent } from "react";
+import { UserPlus, User, Phone, Calendar, Ruler, Save } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  CardDescription,
+} from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { toast } from "sonner";
+import { Patient } from "@/types/patient";
+import { patientAPI } from "@/lib/apis/patients/api";
 
-interface PatientData {
-  name: string;
-  age: string;
-  mobile: string;
-  gender: string;
-}
-
+type CreatePatientType = Omit<Patient, "id">;
 const AddPatientForm: React.FC = () => {
-  const [formData, setFormData] = useState<PatientData>({
-    name: '',
-    age: '',
-    mobile: '',
-    gender: '',
+  const [formData, setFormData] = useState<CreatePatientType>({
+    name: "",
+    age: 10,
+    mob: "",
+    gender: "Male",
   });
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
-    setFormData(prev => ({ ...prev, [id]: value }));
+    setFormData((prev) => ({ ...prev, [id]: value }));
   };
 
-  const handleSelectChange = (value: string) => {
-    setFormData(prev => ({ ...prev, gender: value }));
+  const handleSelectChange = (value: "Male" | "Female" | "Other") => {
+    setFormData((prev) => ({ ...prev, gender: value }));
   };
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    
-    
-    console.log('Submitting Patient Data:', formData);
 
-    
-    toast.success("Attempting to register patient");
+    try {
+      await patientAPI.create(formData);
+      toast.success("Patient registered successfully");
+    } catch (error) {
+      console.log(error)
+      toast.error("Failed to create patient")
+    }
 
-    
-    setFormData({ name: '', age: '', mobile: '', gender: '' });
+    setFormData({ name: "", age: 10, mob: "", gender: "Male" });
   };
 
-  
   const getInputClass = (): string =>
     `w-full pl-10 pr-3 py-2 border rounded-lg transition-all focus:ring-2 text-base border-gray-300 focus:border-blue-500 focus:ring-blue-100 shadow-sm`;
 
@@ -63,10 +71,13 @@ const AddPatientForm: React.FC = () => {
         </CardHeader>
         <CardContent className="p-6 space-y-6">
           <form onSubmit={handleSubmit} className="space-y-6">
-            
-
             <div>
-              <Label htmlFor="name" className="text-gray-700 font-semibold mb-2 block text-sm">Patient Name</Label>
+              <Label
+                htmlFor="name"
+                className="text-gray-700 font-semibold mb-2 block text-sm"
+              >
+                Patient Name
+              </Label>
               <div className="relative">
                 <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <Input
@@ -82,10 +93,13 @@ const AddPatientForm: React.FC = () => {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              
-
               <div>
-                <Label htmlFor="age" className="text-gray-700 font-semibold mb-2 block text-sm">Age</Label>
+                <Label
+                  htmlFor="age"
+                  className="text-gray-700 font-semibold mb-2 block text-sm"
+                >
+                  Age
+                </Label>
                 <div className="relative">
                   <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                   <Input
@@ -101,14 +115,22 @@ const AddPatientForm: React.FC = () => {
                 </div>
               </div>
 
-
               <div>
-                <Label htmlFor="gender" className="text-gray-700 font-semibold mb-2 block text-sm">Gender</Label>
+                <Label
+                  htmlFor="gender"
+                  className="text-gray-700 font-semibold mb-2 block text-sm"
+                >
+                  Gender
+                </Label>
                 <div className="relative">
                   <Ruler className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none z-10" />
-                  <Select value={formData.gender} onValueChange={handleSelectChange}>
-                    <SelectTrigger 
-                        className={`${getInputClass()} flex items-center h-10`}> 
+                  <Select
+                    value={formData.gender}
+                    onValueChange={handleSelectChange}
+                  >
+                    <SelectTrigger
+                      className={`${getInputClass()} flex items-center h-10`}
+                    >
                       <SelectValue placeholder="Select Gender" />
                     </SelectTrigger>
                     <SelectContent>
@@ -121,16 +143,20 @@ const AddPatientForm: React.FC = () => {
               </div>
             </div>
 
-            
             <div>
-              <Label htmlFor="mobile" className="text-gray-700 font-semibold mb-2 block text-sm">Mobile Number</Label>
+              <Label
+                htmlFor="mob"
+                className="text-gray-700 font-semibold mb-2 block text-sm"
+              >
+                Mobile Number
+              </Label>
               <div className="relative">
                 <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <Input
-                  id="mobile"
+                  id="mob"
                   type="tel"
                   placeholder="Enter 10 digit number"
-                  value={formData.mobile}
+                  value={formData.mob}
                   onChange={handleChange}
                   className={getInputClass()}
                   maxLength={10}

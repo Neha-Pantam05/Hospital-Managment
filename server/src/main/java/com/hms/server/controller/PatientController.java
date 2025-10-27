@@ -11,7 +11,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/patients")
-@CrossOrigin(origins = "*")
+
 public class PatientController {
     @Autowired
     private PatientService patientService;
@@ -22,7 +22,7 @@ public class PatientController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Patient> getPatientById(@PathVariable Long id) {
+    public ResponseEntity<Patient> getPatientById(@PathVariable("id") Long id) {
         return ResponseEntity.ok(patientService.getPatientById(id));
     }
 
@@ -33,13 +33,13 @@ public class PatientController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Patient> updatePatient(@PathVariable Long id, @RequestBody PatientRequest request) {
+    public ResponseEntity<Patient> updatePatient(@PathVariable("id") Long id, @RequestBody PatientRequest request) {
         return ResponseEntity.ok(patientService.updatePatient(id, request));
 
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletePatient(@PathVariable Long id) {
+    public ResponseEntity<Void> deletePatient(@PathVariable("id") Long id) {
        patientService.deletePatient(id);
        return ResponseEntity.ok().build();
     }

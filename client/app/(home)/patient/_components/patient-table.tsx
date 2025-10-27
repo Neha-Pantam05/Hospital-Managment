@@ -1,5 +1,5 @@
-'use client'
-import React, { useState, useMemo } from 'react';
+"use client";
+import React, { useState, useMemo, useEffect } from "react";
 import {
   Table,
   TableBody,
@@ -7,14 +7,28 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
-import { CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { User, Eye, Trash, Search, Filter, ArrowUpDown } from 'lucide-react';
-import { format } from 'date-fns';
+} from "@/components/ui/table";
+import { CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  User,
+  Eye,
+  Trash,
+  Search,
+  Filter,
+  ArrowUpDown,
+  Plus,
+} from "lucide-react";
+import { format } from "date-fns";
 import {
   Pagination,
   PaginationContent,
@@ -23,77 +37,93 @@ import {
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
-} from '@/components/ui/pagination';
-import Link from 'next/link';
+} from "@/components/ui/pagination";
+import Link from "next/link";
+import { patientAPI } from "@/lib/apis/patients/api";
+import { PatientTable as PatientTableType } from "@/types/patient";
+import { toast } from "sonner";
 
-type Patient = {
-  id: number;
-  name: string;
-  age: number;
-  gender: 'Male' | 'Female' | 'Other';
-  lastVisited: string;
-};
-
-const mockPatients: Patient[] = [
-  { id: 1, name: 'Aditi Singh', age: 28, gender: 'Female', lastVisited: '2025-10-15' },
-  { id: 2, name: 'Rahul Sharma', age: 45, gender: 'Male', lastVisited: '2025-10-14' },
-  { id: 3, name: 'Sneha Patil', age: 32, gender: 'Female', lastVisited: '2025-10-13' },
-  { id: 4, name: 'Vikram Desai', age: 55, gender: 'Male', lastVisited: '2025-10-12' },
-  { id: 5, name: 'Priya Reddy', age: 38, gender: 'Female', lastVisited: '2025-10-11' },
-  { id: 6, name: 'Arjun Mehta', age: 41, gender: 'Male', lastVisited: '2025-10-10' },
-  { id: 7, name: 'Kavya Iyer', age: 26, gender: 'Female', lastVisited: '2025-10-09' },
-  { id: 8, name: 'Rohan Kapoor', age: 52, gender: 'Male', lastVisited: '2025-10-08' },
-  { id: 9, name: 'Meera Joshi', age: 35, gender: 'Female', lastVisited: '2025-10-07' },
-  { id: 10, name: 'Amit Kumar', age: 48, gender: 'Male', lastVisited: '2025-10-06' },
-  { id: 11, name: 'Neha Gupta', age: 29, gender: 'Female', lastVisited: '2025-10-05' },
-  { id: 12, name: 'Sanjay Verma', age: 62, gender: 'Male', lastVisited: '2025-10-04' },
-  { id: 13, name: 'Anjali Nair', age: 31, gender: 'Female', lastVisited: '2025-10-03' },
-  { id: 14, name: 'Kiran Rao', age: 44, gender: 'Other', lastVisited: '2025-10-02' },
-  { id: 15, name: 'Pooja Shah', age: 27, gender: 'Female', lastVisited: '2025-10-01' },
-];
-
-const GenderBadge = ({ gender }: { gender: Patient['gender'] }) => {
+const GenderBadge = ({ gender }: { gender: PatientTableType["gender"] }) => {
   const variants = {
-    Male: 'bg-blue-100 text-blue-700 border-blue-200',
-    Female: 'bg-pink-100 text-pink-700 border-pink-200',
-    Other: 'bg-purple-100 text-purple-700 border-purple-200',
+    Male: "bg-blue-100 text-blue-700 border-blue-200",
+    Female: "bg-pink-100 text-pink-700 border-pink-200",
+    Other: "bg-purple-100 text-purple-700 border-purple-200",
   };
 
   return (
-    <Badge className={`${variants[gender]} border font-medium`}>
-      {gender}
-    </Badge>
+    <Badge className={`${variants[gender]} border font-medium`}>{gender}</Badge>
   );
 };
 
 const PatientTable = () => {
+  const [patients, setPatients] = useState<PatientTableType[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
   const [currentPage, setCurrentPage] = useState(1);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [genderFilter, setGenderFilter] = useState<string>('all');
-  const [ageSortOrder, setAgeSortOrder] = useState<'asc' | 'desc' | 'none'>('none');
+  const [searchQuery, setSearchQuery] = useState("");
+  const [genderFilter, setGenderFilter] = useState<string>("all");
+  const [ageSortOrder, setAgeSortOrder] = useState<"asc" | "desc" | "none">(
+    "none"
+  );
   const itemsPerPage = 10;
 
+  useEffect(() => {
+    fetchPatients();
+  }, []);
+
+  const fetchPatients = async () => {
+    try {
+      setLoading(true);
+      setError("");
+      const data = await patientAPI.getAll();
+
+      setPatients(data);
+    } catch (err) {
+      console.error("Error fetching patients:", err);
+      setError("Failed to load patients. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = async (id: number, name: string) => {
+    if (!confirm(`Are you sure you want to delete ${name}?`)) {
+      return;
+    }
+
+    try {
+      await patientAPI.delete(id);
+
+      setPatients((prev) => prev.filter((patient) => patient.id !== id));
+      toast.success("Patient deleted successfully!");
+    } catch (err) {
+      console.error("Error deleting patient:", err);
+      toast.error("Failed to delete patient. Please try again.");
+    }
+  };
+
   const filteredAndSortedPatients = useMemo(() => {
-    let filtered = mockPatients;
+    let filtered = patients;
 
     if (searchQuery) {
-      filtered = filtered.filter(patient =>
+      filtered = filtered.filter((patient) =>
         patient.name.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
 
-    if (genderFilter !== 'all') {
-      filtered = filtered.filter(patient => patient.gender === genderFilter);
+    if (genderFilter !== "all") {
+      filtered = filtered.filter((patient) => patient.gender === genderFilter);
     }
 
-    if (ageSortOrder !== 'none') {
+    if (ageSortOrder !== "none") {
       filtered = [...filtered].sort((a, b) => {
-        return ageSortOrder === 'asc' ? a.age - b.age : b.age - a.age;
+        return ageSortOrder === "asc" ? a.age - b.age : b.age - a.age;
       });
     }
 
     return filtered;
-  }, [searchQuery, genderFilter, ageSortOrder]);
+  }, [patients, searchQuery, genderFilter, ageSortOrder]);
 
   const totalPages = Math.ceil(filteredAndSortedPatients.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -125,21 +155,21 @@ const PatientTable = () => {
         for (let i = 1; i <= 4; i++) {
           pages.push(i);
         }
-        pages.push('ellipsis');
+        pages.push("ellipsis");
         pages.push(totalPages);
       } else if (currentPage >= totalPages - 2) {
         pages.push(1);
-        pages.push('ellipsis');
+        pages.push("ellipsis");
         for (let i = totalPages - 3; i <= totalPages; i++) {
           pages.push(i);
         }
       } else {
         pages.push(1);
-        pages.push('ellipsis');
+        pages.push("ellipsis");
         for (let i = currentPage - 1; i <= currentPage + 1; i++) {
           pages.push(i);
         }
-        pages.push('ellipsis');
+        pages.push("ellipsis");
         pages.push(totalPages);
       }
     }
@@ -148,10 +178,10 @@ const PatientTable = () => {
   };
 
   const toggleAgeSort = () => {
-    setAgeSortOrder(prev => {
-      if (prev === 'none') return 'asc';
-      if (prev === 'asc') return 'desc';
-      return 'none';
+    setAgeSortOrder((prev) => {
+      if (prev === "none") return "asc";
+      if (prev === "asc") return "desc";
+      return "none";
     });
   };
 
@@ -164,6 +194,36 @@ const PatientTable = () => {
     setGenderFilter(value);
     setCurrentPage(1);
   };
+
+  if (loading) {
+    return (
+      <CardContent className="p-12">
+        <div className="flex flex-col items-center justify-center gap-4">
+          <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+          <p className="text-gray-600">Loading patients...</p>
+        </div>
+      </CardContent>
+    );
+  }
+
+  if (error) {
+    return (
+      <CardContent className="p-12">
+        <div className="flex flex-col items-center justify-center gap-4">
+          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center">
+            <User className="w-8 h-8 text-red-600" />
+          </div>
+          <p className="text-red-600 font-medium">{error}</p>
+          <Button
+            onClick={fetchPatients}
+            className="bg-blue-600 hover:bg-blue-700"
+          >
+            Try Again
+          </Button>
+        </div>
+      </CardContent>
+    );
+  }
 
   return (
     <CardContent className="p-0">
@@ -181,7 +241,16 @@ const PatientTable = () => {
           </div>
 
           <div className="flex gap-3">
-            <Select value={genderFilter} onValueChange={handleGenderFilterChange}>
+            <Link href="/patient/add-patient">
+              <Button className="bg-blue-500 cursor-pointer text-white flex gap-2 items-center">
+                <Plus />
+                <span>Add Patient</span>
+              </Button>
+            </Link>
+            <Select
+              value={genderFilter}
+              onValueChange={handleGenderFilterChange}
+            >
               <SelectTrigger className="w-[140px] bg-white">
                 <Filter className="w-4 h-4 mr-2" />
                 <SelectValue placeholder="Gender" />
@@ -200,22 +269,32 @@ const PatientTable = () => {
               className="bg-white gap-2"
             >
               <ArrowUpDown className="w-4 h-4" />
-              Age {ageSortOrder === 'asc' ? '↑' : ageSortOrder === 'desc' ? '↓' : ''}
+              Age{" "}
+              {ageSortOrder === "asc"
+                ? "↑"
+                : ageSortOrder === "desc"
+                ? "↓"
+                : ""}
             </Button>
           </div>
         </div>
 
         <div className="flex items-center gap-2 text-sm text-gray-600">
-          <span className="font-semibold">{filteredAndSortedPatients.length}</span>
-          {searchQuery || genderFilter !== 'all' ? 'filtered' : 'total'} patients
-          {(searchQuery || genderFilter !== 'all' || ageSortOrder !== 'none') && (
+          <span className="font-semibold">
+            {filteredAndSortedPatients.length}
+          </span>
+          {searchQuery || genderFilter !== "all" ? "filtered" : "total"}{" "}
+          patients
+          {(searchQuery ||
+            genderFilter !== "all" ||
+            ageSortOrder !== "none") && (
             <Button
               variant="ghost"
               size="sm"
               onClick={() => {
-                setSearchQuery('');
-                setGenderFilter('all');
-                setAgeSortOrder('none');
+                setSearchQuery("");
+                setGenderFilter("all");
+                setAgeSortOrder("none");
                 setCurrentPage(1);
               }}
               className="h-6 px-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
@@ -230,18 +309,31 @@ const PatientTable = () => {
         <Table>
           <TableHeader>
             <TableRow className="bg-gray-50 hover:bg-gray-50">
-              <TableHead className="font-semibold text-gray-700 w-12">#</TableHead>
-              <TableHead className="font-semibold text-gray-700">Patient Name</TableHead>
+              <TableHead className="font-semibold text-gray-700 w-12">
+                #
+              </TableHead>
+              <TableHead className="font-semibold text-gray-700">
+                Patient Name
+              </TableHead>
               <TableHead className="font-semibold text-gray-700">Age</TableHead>
-              <TableHead className="font-semibold text-gray-700">Gender</TableHead>
-              <TableHead className="font-semibold text-gray-700">Last Visited</TableHead>
-              <TableHead className="font-semibold text-gray-700 text-right">Actions</TableHead>
+              <TableHead className="font-semibold text-gray-700">
+                Gender
+              </TableHead>
+              <TableHead className="font-semibold text-gray-700">
+                Mobile
+              </TableHead>
+              <TableHead className="font-semibold text-gray-700">
+                Last Visited
+              </TableHead>
+              <TableHead className="font-semibold text-gray-700 text-right">
+                Actions
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {currentPatients.length > 0 ? (
               currentPatients.map((patient, index) => (
-                <TableRow 
+                <TableRow
                   key={patient.id}
                   className="hover:bg-blue-50/50 transition-colors"
                 >
@@ -253,30 +345,40 @@ const PatientTable = () => {
                       <div className="w-9 h-9 bg-gradient-to-br from-blue-500 to-teal-500 rounded-full flex items-center justify-center text-white text-sm font-semibold flex-shrink-0">
                         {patient.name.charAt(0)}
                       </div>
-                      <span className="font-medium text-gray-800">{patient.name}</span>
+                      <span className="font-medium text-gray-800">
+                        {patient.name}
+                      </span>
                     </div>
                   </TableCell>
                   <TableCell className="text-gray-700">{patient.age}</TableCell>
                   <TableCell>
                     <GenderBadge gender={patient.gender} />
                   </TableCell>
+                  <TableCell>
+                    <span className="font-medium text-gray-800">
+                      {patient.mob}
+                    </span>
+                  </TableCell>
                   <TableCell className="text-gray-700">
-                    {format(new Date(patient.lastVisited), 'MMM dd, yyyy')}
+                    {patient.lastVisited
+                      ? format(new Date(patient.lastVisited), "MMM dd, yyyy")
+                      : "N/A"}
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-2">
                       <Link href={`/patient/${patient.id}`}>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="h-8 w-8 p-0 hover:bg-blue-100 hover:text-blue-600"
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-8 w-8 p-0 hover:bg-blue-100 hover:text-blue-600"
                         >
-                        <Eye className="w-4 h-4" />
-                      </Button>
+                          <Eye className="w-4 h-4" />
+                        </Button>
                       </Link>
                       <Button
                         size="sm"
                         variant="ghost"
+                        onClick={() => handleDelete(patient.id, patient.name)}
                         className="h-8 w-8 p-0 hover:bg-red-100 hover:text-red-600"
                       >
                         <Trash className="w-4 h-4" />
@@ -290,8 +392,12 @@ const PatientTable = () => {
                 <TableCell colSpan={6} className="text-center py-12">
                   <div className="flex flex-col items-center gap-2">
                     <User className="w-12 h-12 text-gray-300" />
-                    <p className="text-gray-500 font-medium">No patients found</p>
-                    <p className="text-sm text-gray-400">Try adjusting your search or filters</p>
+                    <p className="text-gray-500 font-medium">
+                      No patients found
+                    </p>
+                    <p className="text-sm text-gray-400">
+                      Try adjusting your search or filters
+                    </p>
                   </div>
                 </TableCell>
               </TableRow>
@@ -303,23 +409,33 @@ const PatientTable = () => {
       {filteredAndSortedPatients.length > 0 && (
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-6 py-4 border-t bg-gray-50/50">
           <div className="text-sm text-gray-600">
-            Showing <span className="font-semibold">{startIndex + 1}</span> to{' '}
-            <span className="font-semibold">{Math.min(endIndex, filteredAndSortedPatients.length)}</span> of{' '}
-            <span className="font-semibold">{filteredAndSortedPatients.length}</span> patients
+            Showing <span className="font-semibold">{startIndex + 1}</span> to{" "}
+            <span className="font-semibold">
+              {Math.min(endIndex, filteredAndSortedPatients.length)}
+            </span>{" "}
+            of{" "}
+            <span className="font-semibold">
+              {filteredAndSortedPatients.length}
+            </span>{" "}
+            patients
           </div>
 
           <Pagination>
             <PaginationContent>
               <PaginationItem>
-                <PaginationPrevious 
+                <PaginationPrevious
                   onClick={goToPreviousPage}
-                  className={currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                  className={
+                    currentPage === 1
+                      ? "pointer-events-none opacity-50"
+                      : "cursor-pointer"
+                  }
                 />
               </PaginationItem>
 
               {getPageNumbers().map((page, index) => (
                 <PaginationItem key={index}>
-                  {page === 'ellipsis' ? (
+                  {page === "ellipsis" ? (
                     <PaginationEllipsis />
                   ) : (
                     <PaginationLink
@@ -334,9 +450,13 @@ const PatientTable = () => {
               ))}
 
               <PaginationItem>
-                <PaginationNext 
+                <PaginationNext
                   onClick={goToNextPage}
-                  className={currentPage === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                  className={
+                    currentPage === totalPages
+                      ? "pointer-events-none opacity-50"
+                      : "cursor-pointer"
+                  }
                 />
               </PaginationItem>
             </PaginationContent>

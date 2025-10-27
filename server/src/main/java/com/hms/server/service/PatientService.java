@@ -23,7 +23,7 @@ public class PatientService {
     }
 
     public Patient createPatient(PatientRequest request) {
-        if (patientRepo.existsByMob(request.getMobile())) {
+        if (patientRepo.existsByMob(request.getMob())) {
             throw new RuntimeException("Mobile number already present");
         }
 
@@ -31,7 +31,7 @@ public class PatientService {
 
         patient.setAge(request.getAge());
         patient.setGender(request.getGender());
-        patient.setMob(request.getMobile());
+        patient.setMob(request.getMob());
         patient.setName(request.getName());
         patient.setLastVisited(LocalDate.now());
 
@@ -44,7 +44,7 @@ public class PatientService {
         patient.setName(request.getName());
         patient.setAge(request.getAge());
         patient.setGender(request.getGender());
-        patient.setMob(request.getMobile());
+        patient.setMob(request.getMob());
 
 
         return patientRepo.save(patient);

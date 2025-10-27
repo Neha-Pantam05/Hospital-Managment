@@ -11,7 +11,7 @@ import { Eye, EyeOff, Lock, Mail } from "lucide-react";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { toast } from "sonner";
-import { authAPI } from "@/lib/apis/auth/auth";
+import { authAPI } from "@/lib/apis/auth/api";
 import { saveAuthData } from "@/lib/helpers/auth";
 import { useRouter } from "next/navigation";
 

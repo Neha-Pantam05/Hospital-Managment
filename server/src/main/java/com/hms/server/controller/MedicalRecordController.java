@@ -11,13 +11,13 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/medical-records")
-@CrossOrigin(origins = "*")
+
 public class MedicalRecordController {
     @Autowired
     private MedicalRecordService medicalRecordService;
 
     @GetMapping("/patient/{patientId}")
-    public ResponseEntity<List<MedicalRecord>> getPatientMedicalRecords(@PathVariable Long patientId) {
+    public ResponseEntity<List<MedicalRecord>> getPatientMedicalRecords(@PathVariable("patientId") Long patientId) {
         return ResponseEntity.ok(medicalRecordService.getPatientMedicalRecords(patientId));
     }
 

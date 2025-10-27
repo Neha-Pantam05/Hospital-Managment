@@ -145,7 +145,7 @@ const ActionButtons = () => {
 
         <Link href="/patient/add-patient">
           <Button
-            className="bg-white text-black cursor-pointer hover:bg-gray-400 border-gray-500 shadow-lg hover:shadow-xl transition-all gap-2"
+            className="bg-blue-500 text-white cursor-pointer hover:bg-gray-400 border-gray-500 shadow-lg hover:shadow-xl transition-all gap-2"
             size="lg"
           >
             <UserPlus className="w-5 h-5" />
