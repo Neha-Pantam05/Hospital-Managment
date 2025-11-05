@@ -8,7 +8,7 @@ import {
 } from "./skeletons";
 import StatsSection from "./stats-section";
 import GraphsSection from "./graphs-section";
-import TodaysAppointmentSection from "./todays-appoinment-section";
+
 import { DashboardData } from "@/types/dashboard";
 import { dashboardAPI } from "@/lib/apis/dashboard/api";
 

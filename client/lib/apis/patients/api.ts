@@ -24,19 +24,19 @@ export const patientAPI = {
     return response.json();
   },
 
-  search: async (query: string) => {
-    const response = await fetch(
-      `${
-        process.env.NEXT_PUBLIC_API_URL
-      }/patients/search?name=${encodeURIComponent(query)}`,
-      {
-        method: "GET",
-        headers: getHeaders(),
-      }
-    );
-    if (!response.ok) throw new Error("Failed to search patients");
-    return response.json();
-  },
+  // In your patientAPI file
+search: async (query: string) => {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/patients/search?query=${encodeURIComponent(query)}`,
+    {
+      method: "GET",
+      headers: getHeaders(),
+    }
+  );
+   console.log(response)
+  if (!response.ok) throw new Error("Failed to search patients");
+  return response.json();
+},
 
   create: async (data: Omit<Patient,"id">) => {
     const response = await fetch(

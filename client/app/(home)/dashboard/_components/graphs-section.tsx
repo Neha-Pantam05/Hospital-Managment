@@ -26,7 +26,7 @@ import {
 type GraphsSectionProps = {
   visitsByDay: { day: string; visits: number }[];
   genderDistribution: { gender: string; count: number; percentage: number }[];
-  ageDistribution: { group: string; count: number }[];
+  ageDistribution: { ageGroup: string; count: number }[];
 }
 
 const COLORS = {
@@ -35,25 +35,12 @@ const COLORS = {
   pie: ["#3b82f6", "#ec4899", "#8b5cf6", "#10b981", "#f59e0b"],
 };
 
-const CustomTooltip = ({ active, payload, label }: any) => {
-  if (active && payload && payload.length) {
-    return (
-      <div className="bg-white p-3 rounded-lg shadow-lg border border-gray-200">
-        <p className="font-semibold text-gray-800">{label}</p>
-        <p className="text-sm text-gray-600">
-          {payload[0].name}: <span className="font-bold">{payload[0].value}</span>
-        </p>
-      </div>
-    );
-  }
-  return null;
-};
 
 const GraphsSection = ({ ageDistribution, genderDistribution, visitsByDay }: GraphsSectionProps) => {
   
   // Transform age distribution data to match chart expectations
   const transformedAgeData = ageDistribution?.map(item => ({
-    group: item.group,
+    group: item.ageGroup,
     count: item.count
   })) || [];
 
@@ -99,7 +86,7 @@ const GraphsSection = ({ ageDistribution, genderDistribution, visitsByDay }: Gra
                 stroke="#6b7280"
                 style={{ fontSize: "14px", fontWeight: "500" }}
               />
-              <Tooltip content={<CustomTooltip />} />
+              <Tooltip  />
               <Legend />
               <Line
                 type="monotone"
@@ -138,7 +125,7 @@ const GraphsSection = ({ ageDistribution, genderDistribution, visitsByDay }: Gra
                 stroke="#6b7280"
                 style={{ fontSize: "14px", fontWeight: "500" }}
               />
-              <Tooltip content={<CustomTooltip />} />
+              <Tooltip  />
               <Legend />
               <Bar
                 dataKey="count"

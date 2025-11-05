@@ -37,7 +37,23 @@ public class PatientController {
         return ResponseEntity.ok(patientService.updatePatient(id, request));
 
     }
+    @GetMapping("/search")
+    public ResponseEntity<List<Patient>> searchPatients(@RequestParam String query) {
+        List<Patient> patients = patientService.searchPatients(query);
+        return ResponseEntity.ok(patients);
+    }
 
+    @GetMapping("/search/name")
+    public ResponseEntity<List<Patient>> searchPatientsByName(@RequestParam String name) {
+        List<Patient> patients = patientService.searchPatientsByName(name);
+        return ResponseEntity.ok(patients);
+    }
+
+    @GetMapping("/search/mobile")
+    public ResponseEntity<List<Patient>> searchPatientsByMobile(@RequestParam String mobile) {
+        List<Patient> patients = patientService.searchPatientsByMobile(mobile);
+        return ResponseEntity.ok(patients);
+    }
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletePatient(@PathVariable("id") Long id) {
        patientService.deletePatient(id);

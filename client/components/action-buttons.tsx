@@ -4,21 +4,16 @@ import { Search, UserPlus, CalendarPlus, X, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import Link from 'next/link';
+import { patientAPI } from '@/lib/apis/patients/api';
 
 type Patient = {
   id: number;
   name: string;
   age: number;
-  condition: string;
+  gender: string;
+  mob: string;
+  lastVisited: string;
 };
-
-const mockPatients: Patient[] = [
-  { id: 1, name: 'Aditi Singh', age: 28, condition: 'Diabetes' },
-  { id: 2, name: 'Rahul Sharma', age: 45, condition: 'Hypertension' },
-  { id: 3, name: 'Sneha Patil', age: 32, condition: 'Asthma' },
-  { id: 4, name: 'Vikram Desai', age: 55, condition: 'Arthritis' },
-  { id: 5, name: 'Priya Reddy', age: 38, condition: 'Allergy' },
-];
 
 const ActionButtons = () => {
   const [showSearch, setShowSearch] = useState(false);
@@ -26,7 +21,7 @@ const ActionButtons = () => {
   const [searchResults, setSearchResults] = useState<Patient[]>([]);
   const [isSearching, setIsSearching] = useState(false);
 
-  const handleSearch = () => {
+  const handleSearch = async () => {
     if (!searchQuery.trim()) {
       setSearchResults([]);
       return;
@@ -34,13 +29,15 @@ const ActionButtons = () => {
 
     setIsSearching(true);
     
-    setTimeout(() => {
-      const results = mockPatients.filter(patient =>
-        patient.name.toLowerCase().includes(searchQuery.toLowerCase())
-      );
+    try {
+      const results = await patientAPI.search(searchQuery);
       setSearchResults(results);
+    } catch (error) {
+      console.error('Search failed:', error);
+      setSearchResults([]);
+    } finally {
       setIsSearching(false);
-    }, 300);
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -53,6 +50,10 @@ const ActionButtons = () => {
     setShowSearch(false);
     setSearchQuery('');
     setSearchResults([]);
+  };
+
+  const handlePatientClick = (patientId: number) => {
+    window.location.href = `/patient/${patientId}`;
   };
 
   return (
@@ -84,7 +85,7 @@ const ActionButtons = () => {
                 <div className="flex gap-2">
                   <Input
                     type="text"
-                    placeholder="Enter patient name..."
+                    placeholder="Enter patient name or mobile..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     onKeyDown={handleKeyPress}
@@ -96,7 +97,7 @@ const ActionButtons = () => {
                     disabled={isSearching}
                     className="bg-blue-600 hover:bg-blue-700"
                   >
-                    <Search className="w-4 h-4" />
+                    {isSearching ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
                   </Button>
                 </div>
 
@@ -104,21 +105,24 @@ const ActionButtons = () => {
                   <div className="mt-4 max-h-64 overflow-y-auto">
                     {isSearching ? (
                       <div className="text-center py-4">
-                      <Loader2 className='animate-spin bg-blue-600'/>
+                        <Loader2 className="w-6 h-6 animate-spin mx-auto text-blue-600" />
+                        <p className="text-sm text-gray-500 mt-2">Searching...</p>
                       </div>
                     ) : searchResults.length > 0 ? (
                       <div className="space-y-2">
                         {searchResults.map((patient) => (
                           <div
                             key={patient.id}
+                            onClick={() => handlePatientClick(patient.id)}
                             className="p-3 hover:bg-blue-50 rounded-lg cursor-pointer transition-colors border border-transparent hover:border-blue-200"
                           >
                             <div className="flex items-center justify-between">
                               <div>
                                 <p className="font-semibold text-gray-800">{patient.name}</p>
                                 <p className="text-sm text-gray-600">
-                                  Age: {patient.age}
+                                  Age: {patient.age} • {patient.gender}
                                 </p>
+                                <p className="text-xs text-gray-500">{patient.mob}</p>
                               </div>
                               <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-teal-500 rounded-full flex items-center justify-center text-white text-sm font-bold">
                                 {patient.name.charAt(0)}
@@ -145,7 +149,7 @@ const ActionButtons = () => {
 
         <Link href="/patient/add-patient">
           <Button
-            className="bg-blue-500 text-white cursor-pointer hover:bg-gray-400 border-gray-500 shadow-lg hover:shadow-xl transition-all gap-2"
+            className="bg-green-600 hover:bg-green-700 text-white shadow-lg hover:shadow-xl transition-all gap-2"
             size="lg"
           >
             <UserPlus className="w-5 h-5" />

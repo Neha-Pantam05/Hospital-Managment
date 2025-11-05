@@ -46,7 +46,6 @@ public class PatientService {
         patient.setGender(request.getGender());
         patient.setMob(request.getMob());
 
-
         return patientRepo.save(patient);
     }
 
@@ -55,4 +54,24 @@ public class PatientService {
         patientRepo.delete(patient);
     }
 
+    // Search methods
+    public List<Patient> searchPatientsByName(String name) {
+        return patientRepo.findByNameContainingIgnoreCase(name);
+    }
+
+    public List<Patient> searchPatientsByMobile(String mobile) {
+        return patientRepo.findByMobContaining(mobile);
+    }
+
+    public List<Patient> searchPatients(String keyword) {
+        return patientRepo.findByNameContainingIgnoreCaseOrMobContaining(keyword, keyword);
+    }
+
+    public List<Patient> searchPatientsByGender(String gender) {
+        return patientRepo.findByGenderIgnoreCase(gender);
+    }
+
+    public List<Patient> searchPatientsByAgeRange(Integer minAge, Integer maxAge) {
+        return patientRepo.findByAgeBetween(minAge, maxAge);
+    }
 }

@@ -7,7 +7,7 @@ export type DashboardData = {
   };
   graphs: {
     visitsByDay: { day: string; visits: number }[];
-    ageDistribution: { group: string; count: number }[];
+    ageDistribution: { ageGroup: string; count: number }[];
     genderDistribution: { gender: string; count: number; percentage: number }[];
   };
   appointments: {

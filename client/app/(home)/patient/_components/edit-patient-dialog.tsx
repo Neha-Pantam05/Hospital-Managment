@@ -53,7 +53,7 @@ export  const EditPatientDialog = ({ patient, onSave }: { patient: Patient; onSa
             </div>
             <div className="space-y-2">
               <Label htmlFor="gender">Gender</Label>
-              <Select value={formData.gender} onValueChange={(value) => setFormData({ ...formData, gender: value as any })}>
+              <Select value={formData.gender} onValueChange={(value) => setFormData({ ...formData, gender: value as "Male"|"Female" | "Other" })}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
